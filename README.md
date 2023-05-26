@@ -27,6 +27,28 @@ pnpm build
 ```
 
 If you prefer to use npm or yarn just delete the pnpm-lock.yaml file and go ahead.
+
+## Note
+to run locally you need the database
+```
+docker-compose up -d
+```
+-d means __detached__
+
+MondoDB URL Local
+```
+mongodb://localhost:27017/entriesdb
+```
+## Setting environment variables
+Rename the file __.env.template__ to __.env__
+
+## Populate the database with test information
+
+call:
+```
+http://localhost:3000/api/seed
+```
+
 ## Documentation
 
 React: https://reactjs.org/

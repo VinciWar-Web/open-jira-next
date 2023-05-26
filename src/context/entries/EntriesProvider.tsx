@@ -1,56 +1,91 @@
-import { FC, ReactNode, useReducer } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { EntriesContext, entriesReducer } from './';
-import { Entry } from '@/interfaces';
+import { FC, ReactNode, useEffect, useReducer } from 'react'
+import { useSnackbar } from 'notistack';
+import { EntriesContext, entriesReducer } from './'
+import { Entry } from '@/interfaces'
+import { entriesApi } from '@/apis'
 
 export interface EntriesState {
     entries: Entry[];
 }
 
 const Entries_INITIAL_STATE: EntriesState  = {
-    entries: [
-        // {
-        //     _id: uuidv4(),
-        //     description: 'Pendiente cHola Mundo',
-        //     status: 'pending',
-        //     createdAt: Date.now(),
-        // },
-        // {
-        //     _id: uuidv4(),
-        //     description: 'En progreso Hola Mundo2',
-        //     status: 'in-progress',
-        //     createdAt: Date.now() - 1000000,
-        // },
-        // {
-        //     _id: uuidv4(),
-        //     description: 'Terminadas Hola Mundo3',
-        //     status: 'finished',
-        //     createdAt: Date.now() - 100000,
-        // }
-    ]
+    entries: []
 }
 
 interface Props {
     children: ReactNode;
 }
 
+
 export const EntriesProvider: FC<Props> = ({ children }) => {
 
     const [state, dispatch] = useReducer( entriesReducer, Entries_INITIAL_STATE )
+    const { enqueueSnackbar } = useSnackbar()
 
-    const addNewEntry = ( description: string ) => {
-        const newEntry: Entry = {
-            _id: uuidv4(),
-            description,
-            createdAt: Date.now(),
-            status: 'pending'
-        }
-        dispatch({ type: '[Entry] Add-Entry', payload: newEntry })
+    const refreshEntries = async() => {
+        const { data } = await entriesApi.get<Entry[]>('/entries')
+        dispatch({ type: '[Entry] Refresh-Data', payload: data })
     }
 
-    const updateEntry = ( entry: Entry ) => {
-        dispatch({ type: '[Entry] Entry-Update', payload: entry })
+    const addNewEntry = async ( description: string ) => {
+        const { data } = await entriesApi.post<Entry>('/entries', { description })
+        dispatch({ type: '[Entry] Add-Entry', payload: data })
+
+        enqueueSnackbar('Tarea agregada',{
+            variant: 'success',
+            autoHideDuration: 1500,
+            anchorOrigin:{
+                vertical: 'bottom',
+                horizontal: 'center'
+            }
+        })
     }
+
+    const updateEntry = async ( { _id, description, status }: Entry ) => {
+        try {
+            const { data } = await entriesApi.put<Entry>(`/entries/${ _id }`, { description, status } )
+            dispatch({ type: '[Entry] Entry-Update', payload: data })
+
+            enqueueSnackbar('Tarea actualizada',{
+                variant: 'success',
+                autoHideDuration: 1500,
+                anchorOrigin:{
+                    vertical: 'bottom',
+                    horizontal: 'center'
+                }
+            })
+
+        } catch (error) {
+            console.log({ error })
+        }   
+    }
+
+
+    const deleteEntry = async (  _id: string ) => {
+        try {
+            const { data } = await entriesApi.delete<Entry>(`/entries/${ _id }` )
+            dispatch({ type: '[Entry] Delete-Data', payload: data })
+
+            enqueueSnackbar('Tarea borrada',{
+                variant: 'error',
+                autoHideDuration: 1500,
+                anchorOrigin:{
+                    vertical: 'bottom',
+                    horizontal: 'center'
+                }
+            })
+
+            refreshEntries()
+
+        } catch (error) {
+            console.log({ error })
+        }   
+    }
+
+
+    useEffect(() => {
+        refreshEntries()
+    }, [])
     
     return (
         <EntriesContext.Provider value={{
@@ -58,7 +93,8 @@ export const EntriesProvider: FC<Props> = ({ children }) => {
 
             // Metodos
             addNewEntry,
-            updateEntry
+            updateEntry,
+            deleteEntry
         }}>
             {children}
         </EntriesContext.Provider>

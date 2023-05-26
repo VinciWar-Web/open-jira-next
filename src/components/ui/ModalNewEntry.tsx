@@ -49,6 +49,7 @@ export const ModalNewEntry = () => {
         }
         addNewEntry( inputValue )
         setIsAddingEntry(false)
+        setInputValue('')
     }
 
     const handleClose = () => setIsAddingEntry(false);

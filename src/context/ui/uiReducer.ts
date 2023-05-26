@@ -6,9 +6,8 @@ type UIActionType =
     | { type: 'UI - Set isAddingEntry', payload: boolean }
     | { type: 'UI - Start Dragging' }
     | { type: 'UI - End Dragging' }
-
-
-
+    | { type: 'UI - Stat Add Button' }
+    | { type: 'UI - End Add Button' }
 
 export const uiReducer = ( state: UIState, action: UIActionType ):UIState => {
 
@@ -38,7 +37,16 @@ export const uiReducer = ( state: UIState, action: UIActionType ):UIState => {
                 ...state,
                 isDragging: false
             }
-    
+        case 'UI - Stat Add Button':
+            return {
+                ...state,
+                isButton: true
+            }
+        case 'UI - End Add Button':
+            return {
+                ...state,
+                isButton: false
+            }
         default:
             return state;
     }

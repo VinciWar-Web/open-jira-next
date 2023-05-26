@@ -1,11 +1,11 @@
 import { FC, ReactNode, useReducer } from 'react';
 import { UIContext, uiReducer } from './';
 
-
 export interface UIState {
     sidemenuOpen: boolean;
     isAddingEntry: boolean;
     isDragging: boolean;
+    isButton: boolean;
 }
 
 interface Props {
@@ -16,6 +16,7 @@ const UI_INITIAL_STATE: UIState  = {
     sidemenuOpen: false,
     isAddingEntry: false,
     isDragging: false,
+    isButton: true,
 }
 
 export const UIProvider: FC<Props> = ({ children }) => {
@@ -42,6 +43,14 @@ export const UIProvider: FC<Props> = ({ children }) => {
         dispatch({ type: 'UI - End Dragging' })
     }
 
+    const startButton = () => {
+        dispatch({ type: 'UI - Stat Add Button' })
+    }
+
+    const endButton = () => {
+        dispatch({ type: 'UI - End Add Button' })
+    }
+
     return (
         <UIContext.Provider value={{
             ...state,
@@ -54,6 +63,9 @@ export const UIProvider: FC<Props> = ({ children }) => {
 
             startDragging,
             endDragging,
+
+            startButton,
+            endButton,
         }}>
             {children}
         </UIContext.Provider>
